@@ -13,7 +13,7 @@ const DetailSchema = new mongoose.Schema(
       match: [/^\d{10}$/, "Phone number must be exactly 10 digits"],
       required: true,
     },
-    dob: { type: Date },
+    dateOfBirth: { type: Date },
     gender: { type: String, enum: ["male", "female", "other"] },
     parentName: { type: String },
     parentPhone: {

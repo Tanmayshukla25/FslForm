@@ -4,11 +4,11 @@ import { RxCross2 } from "react-icons/rx";
 import { Link } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
 const FormData = () => {
-  const [status, setStatus] = useState("");
+  const [status, setStatus] = useState("Student");
   const [selectedPlatform, setSelectedPlatform] = useState("");
   const [agreed, setAgreed] = useState(false);
   const [term, setTerm] = useState(false);
- 
+
   const [data, setData] = useState({
     name: "",
     email: "",
@@ -40,15 +40,15 @@ const FormData = () => {
       selectedPlatform,
     });
     console.log(response);
-      toast.success("Register successfully!", {
-        position: "top-right",
-        autoClose: 2000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        theme: "colored",
-      });
+    toast.success("Register successfully!", {
+      position: "top-right",
+      autoClose: 2000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      theme: "colored",
+    });
     setData({
       name: "",
       email: "",
@@ -63,7 +63,7 @@ const FormData = () => {
       year: "",
       college: "",
       course: "",
-      friendName:""
+      friendName: "",
     });
   };
 
@@ -76,7 +76,7 @@ const FormData = () => {
 
   return (
     <div className="mt-20 p-6">
-        <ToastContainer />
+      <ToastContainer />
       <form onSubmit={handleSubmit}>
         <div className="border border-gray-300 rounded-lg shadow-sm">
           <h1 className="text-[15px] pl-5 bg-gray-100 font-semibold text-black mb-6 border-b border-gray-200 p-2">
@@ -424,7 +424,7 @@ const FormData = () => {
                     type="text"
                     name="friendName"
                     value={data.friendName}
-                     onChange={handlechange}
+                    onChange={handlechange}
                     placeholder="Enter friend's name"
                     className=" sm:w-[34%] px-4 py-2 border border-gray-300 rounded-md"
                   />
