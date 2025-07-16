@@ -5,6 +5,7 @@ import { Link } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
 const FormData = () => {
   const [status, setStatus] = useState("Student");
+  const [isSubmitted, setIsSubmitted] = useState(false);
   const [selectedPlatform, setSelectedPlatform] = useState("");
   const [agreed, setAgreed] = useState(false);
   const [term, setTerm] = useState(false);
@@ -38,6 +39,7 @@ const FormData = () => {
       ...data,
       status,
       selectedPlatform,
+      agreed: true,
     });
     console.log(response);
     toast.success("Register successfully!", {
@@ -49,6 +51,8 @@ const FormData = () => {
       draggable: true,
       theme: "colored",
     });
+
+    setIsSubmitted(true);
     setData({
       name: "",
       email: "",
@@ -114,6 +118,8 @@ const FormData = () => {
                 type="tel"
                 name="phone"
                 value={data.phone}
+                minLength={1}
+                maxLength={10}
                 onChange={handlechange}
                 placeholder="Enter your phone number"
                 className="w-full sm:w-[83%] px-4 py-2 border border-gray-300 rounded-md"
@@ -182,6 +188,8 @@ const FormData = () => {
               <input
                 type="tel"
                 name="parentPhone"
+                minLength={1}
+                maxLength={10}
                 value={data.parentPhone}
                 onChange={handlechange}
                 placeholder="Enter parent phone"
@@ -437,18 +445,21 @@ const FormData = () => {
             <input
               type="checkbox"
               checked={agreed}
-              onChange={() => setAgreed(!agreed)}
-              className="w-5 h-5 accent-blue-600"
+              onChange={() => {
+                setAgreed(!agreed);
+                openTermsModal();
+              }}
+              className="w-5 h-5 accent-blue-600 cursor-pointer"
             />
             <span className="text-sm text-gray-700">
-              By clicking submit, you agree to our{" "}
+              By clicking submit, you agree to our
               <Link
                 to="#"
                 onClick={(e) => {
                   e.preventDefault();
                   openTermsModal();
                 }}
-                className="text-blue-700 font-semibold"
+                className="text-blue-700 font-semibold underline"
               >
                 Terms & Conditions
               </Link>
@@ -457,14 +468,14 @@ const FormData = () => {
 
           <button
             type="submit"
-            disabled={!agreed}
+            disabled={!agreed || isSubmitted}
             className={`w-full py-3 mb-5 rounded-md text-white font-semibold text-lg transition ${
-              agreed
+              agreed && !isSubmitted
                 ? "bg-blue-500 hover:bg-blue-600"
                 : "bg-blue-300 cursor-not-allowed"
             }`}
           >
-            Register
+            {isSubmitted ? "Registered" : "Register"}
           </button>
 
           {term && (
