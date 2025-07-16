@@ -11,10 +11,6 @@ const port = 4000;
 
 await connectToDb()
 
-  .then(() => console.log("MongoDB connected"))
-  .catch((err) => console.error("MongoDB connection error:", err));
-
-
 app.use(cors({ origin: "http://localhost:5173" }));
 app.use(express.json());
 

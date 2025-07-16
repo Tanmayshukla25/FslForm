@@ -1,26 +1,39 @@
-
 import mongoose from "mongoose";
 
-const DetailSchema = new mongoose.Schema({
-  name: { type: String, required: true },
-  email: { type: String, required: true },
-  phone: { type: Number, required: true },
-  dob: { type: String },
-  gender: { type: String },
-  parentName: { type: String },
-  parentPhone: { type: Number },
-  localAddress: { type: String },
-  permanentAddress: { type: String },
-  sameAddress: { type: Boolean, default: true },
-  status: { type: String,},
-  qualification: { type: String },
-  year: { type: String },
-  college: { type: String },
-  course: { type: String },
-  friendName: { type: String },
-  source: { type: String, default: "Google" },
-  agreed: { type: Boolean, default: false }
-});
+const DetailSchema = new mongoose.Schema(
+  {
+    name: { type: String, minlength: 4, maxlength: 30, required: true },
+    email: {
+      type: String,
+      match: [/\S+@\S+\.\S+/, "Please enter a valid email address"],
+      required: true,
+    },
+    phone: {
+      type: Number,
+      match: [/^\d{10}$/, "Phone number must be exactly 10 digits"],
+      required: true,
+    },
+    dob: { type: Date },
+    gender: { type: String, enum: ["male", "female", "other"] },
+    parentName: { type: String },
+    parentPhone: {
+      type: Number,
+      match: [/^\d{10}$/, "Phone number must be exactly 10 digits"],
+    },
+    localAddress: { type: String },
+    permanentAddress: { type: String },
+    sameAddress: { type: Boolean, default: true },
+    status: { type: String },
+    qualification: { type: String },
+    year: { type: Number },
+    college: { type: String },
+    course: { type: String },
+    friendName: { type: String },
+    source: { type: String },
+    agreed: { type: Boolean, default: false },
+  },
+  { timestamps: true }
+);
 
 const DetailModel = mongoose.model("detail", DetailSchema);
 export default DetailModel;
