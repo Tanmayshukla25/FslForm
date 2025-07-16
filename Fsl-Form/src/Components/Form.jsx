@@ -9,6 +9,7 @@ const FormData = () => {
   const [selectedPlatform, setSelectedPlatform] = useState("");
   const [agreed, setAgreed] = useState(false);
   const [term, setTerm] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const [data, setData] = useState({
     name: "",
@@ -32,43 +33,59 @@ const FormData = () => {
     setData((prev) => ({ ...prev, [name]: value }));
   };
 
+  
+
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Submitted Data: ", { ...data, status, selectedPlatform });
-    const response = await instance.post("api/details/add", {
-      ...data,
-      status,
-      selectedPlatform,
-      agreed: true,
-    });
-    console.log(response);
-    toast.success("Register successfully!", {
-      position: "top-right",
-      autoClose: 2000,
-      hideProgressBar: false,
-      closeOnClick: true,
-      pauseOnHover: true,
-      draggable: true,
-      theme: "colored",
-    });
+    setIsLoading(true);
 
-    setIsSubmitted(true);
-    setData({
-      name: "",
-      email: "",
-      phone: "",
-      dateOfBirth: "",
-      gender: "",
-      parentName: "",
-      parentPhone: "",
-      localAddress: "",
-      permanentAddress: "",
-      qualification: "",
-      year: "",
-      college: "",
-      course: "",
-      friendName: "",
-    });
+    try {
+      console.log("Submitted Data: ", { ...data, status, selectedPlatform });
+      const response = await instance.post("api/details/add", {
+        ...data,
+        status,
+        selectedPlatform,
+        agreed: true,
+      });
+
+      console.log(response);
+      toast.success("Register successfully!", {
+        position: "top-right",
+        autoClose: 2000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        theme: "colored",
+      });
+
+      setIsSubmitted(true);
+      setData({
+        name: "",
+        email: "",
+        phone: "",
+        dateOfBirth: "",
+        gender: "",
+        parentName: "",
+        parentPhone: "",
+        localAddress: "",
+        permanentAddress: "",
+        qualification: "",
+        year: "",
+        college: "",
+        course: "",
+        friendName: "",
+      });
+    } catch (error) {
+      toast.error("Something went wrong!", {
+        position: "top-right",
+        autoClose: 2000,
+        theme: "colored",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const openTermsModal = () => setTerm(true);
@@ -468,14 +485,14 @@ const FormData = () => {
 
           <button
             type="submit"
-            disabled={!agreed || isSubmitted}
+            disabled={!agreed || isSubmitted || isLoading}
             className={`w-full py-3 mb-5 rounded-md text-white font-semibold text-lg transition ${
-              agreed && !isSubmitted
+              agreed && !isSubmitted && !isLoading
                 ? "bg-blue-500 hover:bg-blue-600"
                 : "bg-blue-300 cursor-not-allowed"
             }`}
           >
-            {isSubmitted ? "Registered" : "Register"}
+            {isLoading ? "Loading..." : isSubmitted ? "Registered" : "Register"}
           </button>
 
           {term && (
