@@ -1,8 +1,106 @@
+// import React, { useState } from "react";
+// import instance from "../axiosConfig.js";
+// import { RxCross2 } from "react-icons/rx";
+// import { Link } from "react-router-dom";
+// import { ToastContainer, toast } from "react-toastify";
+// const FormData = () => {
+//   const [status, setStatus] = useState("Student");
+//   const [isSubmitted, setIsSubmitted] = useState(false);
+//   const [selectedPlatform, setSelectedPlatform] = useState("");
+//   const [agreed, setAgreed] = useState(false);
+//   const [term, setTerm] = useState(false);
+//   const [isLoading, setIsLoading] = useState(false);
+//   const [aadhaarFiles, setAadhaarFiles] = useState({
+//     aadhaar1: null,
+//     aadhaar2: null,
+//   });
+
+//   const [data, setData] = useState({
+//     name: "",
+//     email: "",
+//     phone: "",
+//     dateOfBirth: "",
+//     gender: "",
+//     parentName: "",
+//     parentPhone: "",
+//     localAddress: "",
+//     permanentAddress: "",
+//     qualification: "",
+//     year: "",
+//     college: "",
+//     course: "",
+//     friendName: "",
+//   });
+
+//   const handlechange = (e) => {
+//     const { name, value } = e.target;
+//     setData((prev) => ({ ...prev, [name]: value }));
+//   };
+
+//   const handleSubmit = async (e) => {
+//     e.preventDefault();
+//     setIsLoading(true);
+
+//     try {
+//       console.log("Submitted Data: ", { ...data, status, selectedPlatform });
+//       const response = await instance.post("api/details/add", {
+//         ...data,
+//         status,
+//         selectedPlatform,
+//         agreed: true,
+//       });
+
+//       console.log(response);
+//       toast.success("Register successfully!", {
+//         position: "top-right",
+//         autoClose: 2000,
+//         hideProgressBar: false,
+//         closeOnClick: true,
+//         pauseOnHover: true,
+//         draggable: true,
+//         theme: "colored",
+//       });
+
+//       setIsSubmitted(true);
+//       setData({
+//         name: "",
+//         email: "",
+//         phone: "",
+//         dateOfBirth: "",
+//         gender: "",
+//         parentName: "",
+//         parentPhone: "",
+//         localAddress: "",
+//         permanentAddress: "",
+//         qualification: "",
+//         year: "",
+//         college: "",
+//         course: "",
+//         friendName: "",
+//       });
+//     } catch (error) {
+//       toast.error("Something went wrong!", {
+//         position: "top-right",
+//         autoClose: 2000,
+//         theme: "colored",
+//       });
+//     } finally {
+//       setIsLoading(false);
+//     }
+//   };
+
+//   const openTermsModal = () => setTerm(true);
+//   const closeTermsModal = () => setTerm(false);
+//   const handleAgree = () => {
+//     setAgreed(true);
+//     setTerm(false);
+//   };
 import React, { useState } from "react";
 import instance from "../axiosConfig.js";
 import { RxCross2 } from "react-icons/rx";
 import { Link } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
+
 const FormData = () => {
   const [status, setStatus] = useState("Student");
   const [isSubmitted, setIsSubmitted] = useState(false);
@@ -10,6 +108,11 @@ const FormData = () => {
   const [agreed, setAgreed] = useState(false);
   const [term, setTerm] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [aadhaarFiles, setAadhaarFiles] = useState({
+    aadhaar1: null,
+  });
+
+  console.log(Object.entries(aadhaarFiles));
 
   const [data, setData] = useState({
     name: "",
@@ -24,8 +127,11 @@ const FormData = () => {
     qualification: "",
     year: "",
     college: "",
+    aadhaarFiles,
     course: "",
     friendName: "",
+    designation: "",
+    company: "",
   });
 
   const handlechange = (e) => {
@@ -33,30 +139,51 @@ const FormData = () => {
     setData((prev) => ({ ...prev, [name]: value }));
   };
 
-  
-
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
 
     try {
-      console.log("Submitted Data: ", { ...data, status, selectedPlatform });
-      const response = await instance.post("api/details/add", {
-        ...data,
-        status,
-        selectedPlatform,
-        agreed: true,
+      const frmData = new FormData();
+      frmData.append("name", data.name);
+      frmData.append("email", data.email);
+      frmData.append("phone", data.phone);
+      frmData.append("dateOfBirth", data.dateOfBirth);
+      frmData.append("gender", data.gender);
+      frmData.append("parentName", data.parentName);
+      frmData.append("parentPhone", data.parentPhone);
+      frmData.append("localAddress", data.localAddress);
+      frmData.append("permanentAddress", data.permanentAddress);
+      frmData.append("qualification", data.qualification);
+      frmData.append("year", data.year);
+      frmData.append("college", data.college);
+      frmData.append("course", data.course);
+      frmData.append("friendName", data.friendName);
+      frmData.append("designation", data.designation);
+      frmData.append("company", data.company);
+      frmData.append("status", status);
+      frmData.append("selectedPlatform", selectedPlatform);
+      frmData.append("agreed", agreed);
+
+      // Aadhaar files
+      if (aadhaarFiles.aadhaar1) {
+        frmData.append("aadhaar1", aadhaarFiles.aadhaar1);
+      }
+
+      // If you use aadhaar2 later
+      if (aadhaarFiles.aadhaar2) {
+        frmData.append("aadhaar2", aadhaarFiles.aadhaar2);
+      }
+
+      const response = await instance.post("api/details/add", frmData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
       });
 
-      console.log(response);
       toast.success("Register successfully!", {
         position: "top-right",
         autoClose: 2000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
         theme: "colored",
       });
 
@@ -76,6 +203,13 @@ const FormData = () => {
         college: "",
         course: "",
         friendName: "",
+        designation: "",
+        company: "",
+      });
+
+      setAadhaarFiles({
+        aadhaar1: null,
+        aadhaar2: null,
       });
     } catch (error) {
       toast.error("Something went wrong!", {
@@ -174,6 +308,29 @@ const FormData = () => {
                     {item.charAt(0).toUpperCase() + item.slice(1)}
                   </label>
                 ))}
+              </div>
+            </div>
+
+            <div className="mb-6 flex  items-center gap-20">
+              <label className="block text-[16px] w-35 font-medium text-gray-700 mb-2">
+                Aadhaar Card
+              </label>
+              <div className="flex flex-col md:flex-row items-start md:items-center gap-4">
+                <div>
+                  <input
+                    type="file"
+                    name="aadhaar1"
+                    accept="image/*,application/pdf"
+                    onChange={(e) =>
+                      setAadhaarFiles((prev) => ({
+                        ...prev,
+                        aadhaar1: e.target.files[0],
+                      }))
+                    }
+                    className="block w-[250px] p-2 text-sm text-gray-900 border border-gray-300 rounded-lg bg-white focus:outline-none"
+                    required
+                  />
+                </div>
               </div>
             </div>
           </div>
