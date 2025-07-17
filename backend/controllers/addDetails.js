@@ -22,65 +22,25 @@
 
 
 
-import DetailModel from "../models/DetailModel.js"; 
+
+
+import DetailModel from "../models/DetailModel.js";
 
 export async function addDetails(req, res, next) {
   try {
-    console.log("Received Body Data:", req.body);
-    console.log("Received File:", req.file);
+    console.log("Received body:", req.body);
+    console.log("Received file:", req.file); // This is where multer stores the uploaded file
 
-    const {
-      name,
-      email,
-      phone,
-      dateOfBirth,
-      gender,
-      parentName,
-      parentPhone,
-      localAddress,
-      permanentAddress,
-      sameAddress,
-      status,
-      qualification,
-      year,
-      college,
-      designation,
-      company,
-      course,
-      source,
-      friendName,
-      agreed,
-    } = req.body;
-
-    const aadhaar1 = req.file ? req.file.filename : null;
+    const { filename } = req.file || {}; // Get filename from multer
 
     const dataToAdd = new DetailModel({
-      name,
-      email,
-      phone,
-      dateOfBirth,
-      gender,
-      parentName,
-      parentPhone,
-      localAddress,
-      permanentAddress,
-      sameAddress,
-      status,
-      qualification,
-      year,
-      college,
-      designation,
-      company,
-      course,
-      source,
-      friendName,
-      aadhaar1,
-      agreed,
+      ...req.body,
+      aadhaar1: filename || "", // Save the filename of uploaded file
     });
 
     await dataToAdd.save();
 
-    res.status(200).send("Data Added Successfully");
+    res.status(200).send("Data Added");
   } catch (error) {
     console.error("Error while saving data:", error);
     res.status(500).json({
@@ -89,3 +49,7 @@ export async function addDetails(req, res, next) {
     });
   }
 }
+
+
+
+

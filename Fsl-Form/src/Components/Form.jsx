@@ -16,7 +16,7 @@ const FormData = () => {
     aadhaar1: null,
   });
 
-  console.log(Object.entries(aadhaarFiles));
+  // console.log(Object.entries(aadhaarFiles));
 
   const [data, setData] = useState({
     name: "",
