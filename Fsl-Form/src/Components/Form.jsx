@@ -123,6 +123,31 @@ const Form = () => {
     } finally {
       setIsSubmitting(false);
     }
+
+
+    setFormValues({
+       name: "",
+    email: "",
+    password: "",
+    phone: "",
+    dob: "",
+    gender: "",
+    aadhaarFront: null,
+    aadhaarBack: null,
+    parentName: "",
+    parentPhone: "",
+    localAddress: "",
+    permanentAddress: "",
+    sameAsLocal: false,
+    status: "student",
+    qualification: "",
+    year: "",
+    college: "",
+    course: "",
+    source: "",
+    friendName: "",
+    })
+  
   };
 
   function handlePopupAgree() {
