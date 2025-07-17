@@ -1,136 +1,137 @@
 
-import React, { useState } from "react";
-import instance from "../axiosConfig.js";
-import { RxCross2 } from "react-icons/rx";
-import { Link } from "react-router-dom";
+import { useState } from "react";
+import instance from "../axiosConfig";
 import { ToastContainer, toast } from "react-toastify";
 
-const FormData = () => {
-  const [status, setStatus] = useState("Student");
-  const [isSubmitted, setIsSubmitted] = useState(false);
-  const [selectedPlatform, setSelectedPlatform] = useState("");
-  const [agreed, setAgreed] = useState(false);
-  const [term, setTerm] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [aadhaarFiles, setAadhaarFiles] = useState({
-    aadhaar1: null,
-  });
-
-  // console.log(Object.entries(aadhaarFiles));
-
-  const [data, setData] = useState({
+const Form = () => {
+  const [showPopup, setShowPopUp] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [formValues, setFormValues] = useState({
     name: "",
     email: "",
+    password: "",
     phone: "",
-    dateOfBirth: "",
+    dob: "",
     gender: "",
+    aadhaarFront: null,
+    aadhaarBack: null,
     parentName: "",
     parentPhone: "",
     localAddress: "",
     permanentAddress: "",
+    sameAsLocal: false,
+    status: "student",
     qualification: "",
     year: "",
     college: "",
-    aadhaarFiles,
     course: "",
+    source: "",
     friendName: "",
-    designation: "",
-    company: "",
   });
 
-  const handlechange = (e) => {
-    const { name, value } = e.target;
-    setData((prev) => ({ ...prev, [name]: value }));
+  const [aadharPreview, setAadharPreviews] = useState({
+    front: null,
+    back: null,
+  });
+
+  const handleInputChange = (e) => {
+    const { name, value, type, checked, files } = e.target;
+
+    if (type === "file" && files?.length) {
+      const file = files[0];
+      const reader = new FileReader();
+
+      reader.onload = () => {
+        setAadharPreviews((prev) => ({
+          ...prev,
+          [name === "aadhaarFront" ? "front" : "back"]: reader.result,
+        }));
+      };
+
+      reader.readAsDataURL(file);
+
+      
+      setFormValues((prev) => ({
+        ...prev,
+        [name]: file,
+      }));
+    } else if (type === "checkbox") {
+      setFormValues((prev) => ({
+        ...prev,
+        [name]: checked,
+        ...(name === "sameAsLocal" &&
+          checked && { permanentAddress: prev.localAddress }),
+      }));
+    } else {
+      setFormValues((prev) => ({
+        ...prev,
+        [name]: value,
+      }));
+    }
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setIsLoading(true);
+  const [isChecked, setIsChecked] = useState(false);
 
+  const handleToggleChange = () => {
+    setIsChecked(!isChecked);
+    setShowPopUp(true);
+  };
+
+  async function handleSubmit(e) {
     try {
-      const frmData = new FormData();
-      frmData.append("name", data.name);
-      frmData.append("email", data.email);
-      frmData.append("phone", data.phone);
-      frmData.append("dateOfBirth", data.dateOfBirth);
-      frmData.append("gender", data.gender);
-      frmData.append("parentName", data.parentName);
-      frmData.append("parentPhone", data.parentPhone);
-      frmData.append("localAddress", data.localAddress);
-      frmData.append("permanentAddress", data.permanentAddress);
-      frmData.append("qualification", data.qualification);
-      frmData.append("year", data.year);
-      frmData.append("college", data.college);
-      frmData.append("course", data.course);
-      frmData.append("friendName", data.friendName);
-      frmData.append("designation", data.designation);
-      frmData.append("company", data.company);
-      frmData.append("status", status);
-      frmData.append("selectedPlatform", selectedPlatform);
-      frmData.append("agreed", agreed);
+      e.preventDefault();
+        if (isSubmitting) return; 
+          setIsSubmitting(true);
+      console.log(formValues);
 
-      // Aadhaar files
-      if (aadhaarFiles.aadhaar1) {
-        frmData.append("aadhaar1", aadhaarFiles.aadhaar1);
-      }
+      const frm = new FormData();
+      frm.append("name", formValues.name);
+      frm.append("email", formValues.email);
+      frm.append("password", formValues.password);
+      frm.append("phone", formValues.phone);
+      frm.append("dob", formValues.dob);
+      frm.append("gender", formValues.gender);
+      frm.append("aadhaarFront", formValues.aadhaarFront);
+      frm.append("aadhaarBack", formValues.aadhaarBack);
+      frm.append("parentName", formValues.parentName);
+      frm.append("parentPhone", formValues.parentPhone);
+      frm.append("localAddress", formValues.localAddress);
+      frm.append("permanentAddress", formValues.permanentAddress);
+      frm.append("status", formValues.status);
+      frm.append("qualification", formValues.qualification);
+      frm.append("year", formValues.year);
+      frm.append("college", formValues.college);
+      frm.append("course", formValues.course);
+      frm.append("source", formValues.source);
+      frm.append("friendName", formValues.friendName);
+      console.log(frm);
 
-      // If you use aadhaar2 later
-      if (aadhaarFiles.aadhaar2) {
-        frmData.append("aadhaar2", aadhaarFiles.aadhaar2);
-      }
-
-      const response = await instance.post("api/details/add", frmData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      });
-
+      const response = await instance.post("/api/details/add", frm);
+      console.log("Submitted Successfully:", response.data);
       toast.success("Register successfully!", {
         position: "top-right",
         autoClose: 2000,
         theme: "colored",
       });
-
-      setIsSubmitted(true);
-      setData({
-        name: "",
-        email: "",
-        phone: "",
-        dateOfBirth: "",
-        gender: "",
-        parentName: "",
-        parentPhone: "",
-        localAddress: "",
-        permanentAddress: "",
-        qualification: "",
-        year: "",
-        college: "",
-        course: "",
-        friendName: "",
-        designation: "",
-        company: "",
-      });
-
-      setAadhaarFiles({
-        aadhaar1: null,
-        aadhaar2: null,
-      });
-    } catch (error) {
-      toast.error("Something went wrong!", {
+      } catch (error) {
+      console.error(error);
+      toast.error("An error occurred during registration", {
         position: "top-right",
         autoClose: 2000,
         theme: "colored",
       });
     } finally {
-      setIsLoading(false);
+      setIsSubmitting(false);
     }
   };
 
-  const openTermsModal = () => setTerm(true);
-  const closeTermsModal = () => setTerm(false);
-  const handleAgree = () => {
-    setAgreed(true);
-    setTerm(false);
+  function handlePopupAgree() {
+    setIsChecked(true);
+    setShowPopUp(false);
+  }
+  function handlePopupCancel() {
+    setIsChecked(false);
+    setShowPopUp(false);
   };
 
   return (
@@ -142,479 +143,518 @@ const FormData = () => {
             Personal Details
           </h1>
 
-          <div className="space-y-6 ml-5">
-            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-15">
-              <label className="w-40 text-gray-700 font-medium">Name</label>
-              <input
-                type="text"
-                name="name"
-                value={data.name}
-                onChange={handlechange}
-                placeholder="Enter your full name"
-                className="w-full sm:w-[83%] px-4 py-2 border border-gray-300 rounded-md"
-              />
-            </div>
+          {/* Name */}
+          <div className="flex flex-col sm:flex-row items-start sm:items-center  px-6 mb-4">
+            <label className="w-50 text-sm font-medium text-gray-700">
+              Name
+            </label>
+            <input
+              type="text"
+              name="name"
+              placeholder="Enter your full name"
+              className="w-full sm:w-[83%] px-4 py-2 border border-gray-300 rounded-md"
+              value={formValues.name}
+              onChange={handleInputChange}
+            />
+          </div>
 
-            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-15">
-              <label className="w-40 text-gray-700 font-medium">Email</label>
-              <input
-                type="email"
-                name="email"
-                value={data.email}
-                onChange={handlechange}
-                placeholder="Enter your email"
-                className="w-full sm:w-[83%] px-4 py-2 border border-gray-300 rounded-md"
-              />
-            </div>
+          {/* Email */}
+          <div className="flex flex-col sm:flex-row items-start sm:items-center px-6 mb-4">
+            <label className="w-50 text-sm font-medium text-gray-700">
+              Email
+            </label>
+            <input
+              type="email"
+              name="email"
+              placeholder="Enter your email address"
+              className="w-full sm:w-[83%] px-4 py-2 border border-gray-300 rounded-md"
+              value={formValues.email}
+              onChange={handleInputChange}
+            />
+          </div>
 
-            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-15">
-              <label className="w-40 text-gray-700 font-medium">Phone</label>
-              <input
-                type="tel"
-                name="phone"
-                value={data.phone}
-                minLength={1}
-                maxLength={10}
-                onChange={handlechange}
-                placeholder="Enter your phone number"
-                className="w-full sm:w-[83%] px-4 py-2 border border-gray-300 rounded-md"
-              />
-            </div>
+          {/* Phone */}
+          <div className="flex flex-col sm:flex-row items-start sm:items-center px-6 mb-4">
+            <label className="w-50 text-sm font-medium text-gray-700">
+              Phone
+            </label>
+            <input
+              type="number"
+              name="phone"
+              placeholder="Enter your phone number"
+              className="w-full sm:w-[83%] px-4 py-2 border border-gray-300 rounded-md"
+              value={formValues.phone}
+              onChange={handleInputChange}
+            />
+          </div>
 
-            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-15">
-              <label className="w-40 text-gray-700 font-medium">
-                Date of Birth
+          {/* DOB */}
+          <div className="flex flex-col sm:flex-row items-start sm:items-center px-6 mb-4">
+            <label className="w-50 text-sm font-medium text-gray-700">
+              Date of Birth
+            </label>
+            <input
+              type="date"
+              name="dob"
+              placeholder="dd-mm-yyyy"
+              className="w-full sm:w-[83%] px-4 py-2 border border-gray-300 rounded-md"
+              value={formValues.dob}
+              onChange={handleInputChange}
+            />
+          </div>
+
+          {/* Gender */}
+          <div className="flex flex-col sm:flex-row items-start sm:items-center px-6 mb-4">
+            <label className="w-50 text-sm font-medium text-gray-700">
+              Gender
+            </label>
+            <div className="flex gap-8">
+              <label className="flex items-center gap-2">
+                <input
+                  type="radio"
+                  name="gender"
+                  value="Male"
+                  checked={formValues.gender === "Male"}
+                  onChange={handleInputChange}
+                />
+                Male
               </label>
-              <input
-                type="date"
-                name="dateOfBirth"
-                value={data.dateOfBirth}
-                onChange={handlechange}
-                className="w-full sm:w-[83%] px-4 py-2 border border-gray-300 rounded-md"
-              />
-            </div>
-
-            <div className="flex flex-col sm:flex-row items-start sm:items-center pb-10 gap-15">
-              <label className="w-40 text-gray-700 font-medium">Gender</label>
-              <div className="flex gap-6">
-                {["male", "female", "other"].map((item) => (
-                  <label
-                    key={item}
-                    className="flex items-center gap-2 text-gray-700"
-                  >
-                    <input
-                      type="radio"
-                      name="gender"
-                      value={item}
-                      checked={data.gender === item}
-                      onChange={handlechange}
-                    />
-                    {item.charAt(0).toUpperCase() + item.slice(1)}
-                  </label>
-                ))}
-              </div>
-            </div>
-
-            <div className="mb-6 flex  items-center gap-20">
-              <label className="block text-[16px] w-35 font-medium text-gray-700 mb-2">
-                Aadhaar Card
+              <label className="flex items-center gap-2">
+                <input
+                  type="radio"
+                  name="gender"
+                  value="Female"
+                  checked={formValues.gender === "Female"}
+                  onChange={handleInputChange}
+                />
+                Female
               </label>
-              <div className="flex flex-col md:flex-row items-start md:items-center gap-4">
-                <div>
-                  <input
-                    type="file"
-                    name="aadhaar1"
-                    accept="image/*,application/pdf"
-                    onChange={(e) =>
-                      setAadhaarFiles((prev) => ({
-                        ...prev,
-                        aadhaar1: e.target.files[0],
-                      }))
-                    }
-                    className="block w-[250px] p-2 text-sm text-gray-900 border border-gray-300 rounded-lg bg-white focus:outline-none"
-                    required
+              <label className="flex items-center gap-2">
+                <input
+                  type="radio"
+                  name="gender"
+                  value="Other"
+                  checked={formValues.gender === "Other"}
+                  onChange={handleInputChange}
+                />
+                Other
+              </label>
+            </div>
+          </div>
+
+          {/* Aadhaar Upload */}
+          <div className="flex flex-col sm:flex-row items-start sm:items-center px-6 mb-6">
+            <label className="w-50 text-sm font-medium text-gray-700">
+              Aadhaar Card
+            </label>
+            <div className="flex flex-col sm:flex-row gap-4 sm:gap-8 w-full sm:w-[83%]">
+              <div>
+                <input
+                  type="file"
+                  name="aadhaarFront"
+                  className="border border-gray-300 px-2 py-1 rounded-md"
+                  onChange={handleInputChange}
+                />
+                {aadharPreview.front && (
+                  <img
+                    src={aadharPreview.front}
+                    alt="Aadhaar Front Preview"
+                    className="mt-2 w-[200px] h-auto border"
                   />
-                </div>
+                )}
+              </div>
+              <div>
+                <input
+                  type="file"
+                  name="aadhaarBack"
+                  className="border border-gray-300 px-2 py-1 rounded-md"
+                  onChange={handleInputChange}
+                />
+                {aadharPreview.back && (
+                  <img
+                    src={aadharPreview.back}
+                    alt="Aadhaar Back Preview"
+                    className="mt-2 w-[200px] h-auto border"
+                  />
+                )}
               </div>
             </div>
           </div>
         </div>
 
-        <div className="mt-6 border border-gray-300 rounded-lg shadow-sm ">
+        {/* Parent/Guardian Details */}
+        <div className="border border-gray-300 rounded-lg shadow-sm mt-6">
           <h1 className="text-[15px] pl-5 bg-gray-100 font-semibold text-black mb-6 border-b border-gray-200 p-2">
-            Parent / Guardian Details
+            Parent/ Guardian Details
           </h1>
-          <div className="space-y-6 ml-5">
-            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-              <label className="w-50 text-gray-700 font-medium">
-                Parent / Guardian Name
-              </label>
-              <input
-                type="text"
-                name="parentName"
-                value={data.parentName}
-                onChange={handlechange}
-                placeholder="Enter parent name"
-                className="w-full sm:w-[83%] px-4 py-2 border border-gray-300 rounded-md"
-              />
-            </div>
 
-            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 pb-5">
-              <label className="w-50 text-gray-700 font-medium">
-                Parent / Guardian Phone
-              </label>
-              <input
-                type="tel"
-                name="parentPhone"
-                minLength={1}
-                maxLength={10}
-                value={data.parentPhone}
-                onChange={handlechange}
-                placeholder="Enter parent phone"
-                className="w-full sm:w-[83%] px-4 py-2 border border-gray-300 rounded-md"
-              />
-            </div>
+          {/* Parent/Guardian Name */}
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-9 px-6 mb-4">
+            <label
+              htmlFor="parentName"
+              className="w-40 text-sm font-medium text-gray-700"
+            >
+              Parent/ Guardian Name
+            </label>
+            <input
+              type="text"
+              name="parentName"
+              placeholder="Enter your parent's name"
+              className="w-full sm:w-[83%] px-4 py-2 border border-gray-300 rounded-md"
+              value={formValues.parentName}
+              onChange={handleInputChange}
+            />
+          </div>
+
+          {/* Parent/Guardian Phone */}
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-9 px-6 mb-6">
+            <label
+              htmlFor="parentPhone"
+              className="w-40 text-sm font-medium text-gray-700"
+            >
+              Parent/ Guardian Phone
+            </label>
+            <input
+              type="number"
+              name="parentPhone"
+              placeholder="Enter parent's phone number"
+              className="w-full sm:w-[83%] px-4 py-2 border border-gray-300 rounded-md"
+              value={formValues.parentPhone}
+              onChange={handleInputChange}
+            />
           </div>
         </div>
 
-        <div className="mt-6 border border-gray-300 rounded-lg shadow-sm ">
+        {/* Residential Details */}
+        <div className="border border-gray-300 rounded-lg shadow-sm mt-6">
           <h1 className="text-[15px] pl-5 bg-gray-100 font-semibold text-black mb-6 border-b border-gray-200 p-2">
             Residential Details
           </h1>
-          <div className="space-y-6 ml-5">
-            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-              <label className="w-50 text-gray-700 font-medium">
-                Local Address
-              </label>
-              <input
-                type="text"
-                name="localAddress"
-                value={data.localAddress}
-                onChange={handlechange}
-                placeholder="Enter local address"
-                className="w-full sm:w-[83%] px-4 py-2 border border-gray-300 rounded-md"
-              />
-            </div>
 
-            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-              <label className="w-50 text-gray-700 font-medium"></label>
-              <div className="text-center">
-                <input
-                  type="checkbox"
-                  onChange={(e) =>
-                    setData((prev) => ({
-                      ...prev,
-                      permanentAddress: e.target.checked
-                        ? prev.localAddress
-                        : "",
-                    }))
-                  }
-                />{" "}
+          {/* Local Address */}
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-9 px-6 mb-4">
+            <label
+              htmlFor="localAddress"
+              className="w-40 text-sm font-medium text-gray-700"
+            >
+              Local Address
+            </label>
+            <textarea
+              name="localAddress"
+              placeholder="Enter your local address"
+              className="w-full sm:w-[83%] px-4 py-2 border border-gray-300 rounded-md"
+              value={formValues.localAddress}
+              onChange={handleInputChange}
+            />
+          </div>
+
+          {/* Same as Local Address Checkbox */}
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-9 px-6 mb-4">
+            <label className="w-40"></label>
+            <div className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                checked={
+                  formValues.permanentAddress === formValues.localAddress
+                }
+                onChange={(e) =>
+                  setFormValues((prev) => ({
+                    ...prev,
+                    permanentAddress: e.target.checked ? prev.localAddress : "",
+                  }))
+                }
+              />
+              <span className="text-sm text-gray-700">
                 Permanent address is the same as local address
-              </div>
+              </span>
             </div>
+          </div>
 
-            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 pb-5">
-              <label className="w-50 text-gray-700 font-medium">
-                Permanent Address
-              </label>
-              <input
-                type="text"
-                name="permanentAddress"
-                readOnly
-                value={data.permanentAddress}
-                onChange={handlechange}
-                placeholder="Enter permanent address"
-                className="w-full sm:w-[83%] px-4 py-2 border border-gray-300 rounded-md"
-              />
-            </div>
+          {/* Permanent Address */}
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-9 px-6 mb-6">
+            <label
+              htmlFor="permanentAddress"
+              className="w-40 text-sm font-medium text-gray-700"
+            >
+              Permanent Address
+            </label>
+            <textarea
+              name="permanentAddress"
+              placeholder="Enter your permanent address"
+              className="w-full sm:w-[83%] px-4 py-2 border border-gray-300 rounded-md"
+              value={formValues.permanentAddress}
+              onChange={handleInputChange}
+              disabled={formValues.permanentAddress === formValues.localAddress}
+            />
           </div>
         </div>
 
-        <div className="mt-6  space-y-8 border border-gray-300 rounded-lg shadow-sm bg-white">
-          <h2 className="text-[15px] pl-5 bg-gray-100 font-semibold text-black border-b border-gray-200 p-2">
-            Educational Details
-          </h2>
+        {/* Education Details */}
+        <div className="border border-gray-300 rounded-lg shadow-sm mt-6">
+          <h1 className="text-[15px] pl-5 bg-gray-100 font-semibold text-black mb-6 border-b border-gray-200 p-2">
+            Education Details
+          </h1>
 
-          <div className="ml-5 py-2 space-y-6">
-            <div className="flex items-center gap-5">
-              <label className=" w-50 block text-gray-700 font-medium mb-2">
-                Are you a:
+          {/* Status */}
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-9 px-6 mb-4">
+            <label
+              htmlFor="status"
+              className="w-40 text-sm font-medium text-gray-700"
+            >
+              Are you a:
+            </label>
+            <div className="flex gap-8">
+              <label className="flex items-center gap-2">
+                <input
+                  type="radio"
+                  name="status"
+                  value="student"
+                  checked={formValues.status === "student"}
+                  onChange={handleInputChange}
+                />
+                Student
               </label>
-              <div className="flex items-center gap-6">
-                {["Student", "Working Professional"].map((type) => (
-                  <label key={type} className="flex items-center space-x-2">
+              <label className="flex items-center gap-2">
+                <input
+                  type="radio"
+                  name="status"
+                  value="Working Professional"
+                  checked={formValues.status === "Working Professional"}
+                  onChange={handleInputChange}
+                />
+                Working Professional
+              </label>
+            </div>
+          </div>
+
+          {/* Qualification */}
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-9 px-6 mb-4">
+            <label
+              htmlFor="qualification"
+              className="w-40 text-sm font-medium text-gray-700"
+            >
+              Last Attended Qualification
+            </label>
+            <input
+              type="text"
+              name="qualification"
+              placeholder="Enter your qualification"
+              className="w-full sm:w-[83%] px-4 py-2 border border-gray-300 rounded-md"
+              value={formValues.qualification}
+              onChange={handleInputChange}
+            />
+          </div>
+
+          {/* Year */}
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-9 px-6 mb-4">
+            <label
+              htmlFor="year"
+              className="w-40 text-sm font-medium text-gray-700"
+            >
+              Year
+            </label>
+            <input
+              type="number"
+              name="year"
+              placeholder="Enter your completion year"
+              className="w-full sm:w-[83%] px-4 py-2 border border-gray-300 rounded-md"
+              value={formValues.year}
+              onChange={handleInputChange}
+            />
+          </div>
+
+          {/* College (only if Student) */}
+          {formValues.status === "student" && (
+            <div className="flex flex-col sm:flex-row items-start gap-9 sm:items-center px-6 mb-6">
+              <label
+                htmlFor="college"
+                className="w-40 text-sm font-medium text-gray-700"
+              >
+                College / University
+              </label>
+              <input
+                type="text"
+                name="college"
+                placeholder="College / University"
+                className="w-full sm:w-[83%] px-4 py-2 border border-gray-300 rounded-md"
+                value={formValues.college}
+                onChange={handleInputChange}
+              />
+            </div>
+          )}
+        </div>
+
+        {/* Course Details */}
+        <div className="border border-gray-300 rounded-lg shadow-sm mt-6">
+          <h1 className="px-2 text-2xl font-semibold bg-gray-100 text-gray-800 py-2">
+            Course Details
+          </h1>
+
+          <div className="flex flex-col sm:flex-row  items-start gap-15 sm:items-center my-4">
+            <label
+              htmlFor="course"
+              className="w-36 mx-2 font-medium text-gray-700"
+            >
+              Course
+            </label>
+            <select
+              name="course"
+              value={formValues.course}
+              onChange={handleInputChange}
+              className="w-full sm:w-[80%] px-4 py-2 border border-gray-300 rounded-md"
+            >
+              <option>Select a course</option>
+              {[
+                "Advanced Java",
+                "Android",
+                "Computer Basics",
+                "Core Java",
+                "Digital Marketing",
+                "Full Stack Development",
+                "Graphic Design",
+                "Node JS",
+                "Photoshop",
+                "PHP",
+                "Python",
+                "React JS",
+                "Web Design",
+                "Other Course",
+              ].map((course) => (
+                <option key={course}>{course}</option>
+              ))}
+            </select>
+          </div>
+
+          <div className="flex flex-col sm:flex-row gap-8 items-start sm:items-center my-4">
+            <label
+              htmlFor="source"
+              className="w-36 mx-2 font-medium text-gray-700"
+            >
+              How did you hear about us?
+            </label>
+            <div className="flex flex-wrap gap-6">
+              {["Google", "LinkedIn", "Instagram", "Friend", "Other"].map(
+                (source) => (
+                  <span className="flex gap-2 items-center" key={source}>
                     <input
                       type="radio"
-                      name="status"
-                      value={type}
-                      checked={status === type}
-                      onChange={() => setStatus(type)}
-                      className="accent-blue-600"
+                      name="source"
+                      value={source}
+                      checked={formValues.source === source}
+                      onChange={handleInputChange}
                     />
-                    <span>{type}</span>
-                  </label>
-                ))}
-              </div>
-            </div>
-
-            {status === "Student" ? (
-              <div className="space-y-4">
-                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-                  <label className="w-50 text-gray-700 font-medium">
-                    Last Attained Qualification
-                  </label>
-                  <input
-                    type="text"
-                    name="qualification"
-                    value={data.qualification}
-                    onChange={handlechange}
-                    placeholder="Enter your qualification"
-                    className="w-full sm:w-[83%] px-4 py-2 border border-gray-300 rounded-md"
-                  />
-                </div>
-
-                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-                  <label className="w-50 text-gray-700 font-medium">Year</label>
-                  <input
-                    type="text"
-                    name="year"
-                    value={data.year}
-                    onChange={handlechange}
-                    placeholder="Enter your completion year"
-                    className="w-full sm:w-[83%] px-4 py-2 border border-gray-300 rounded-md"
-                  />
-                </div>
-
-                <div className="flex flex-col pb-5 sm:flex-row items-start sm:items-center gap-4">
-                  <label className="w-50 text-gray-700 font-medium">
-                    College / University
-                  </label>
-                  <input
-                    type="text"
-                    name="college"
-                    value={data.college}
-                    onChange={handlechange}
-                    placeholder="College / University"
-                    className="sm:w-[83%] px-4 py-2 border border-gray-300 rounded-md"
-                  />
-                </div>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-                  <label className="w-50 text-gray-700 font-medium">
-                    Designation
-                  </label>
-                  <input
-                    type="text"
-                    name="designation"
-                    value={data.designation}
-                    onChange={handlechange}
-                    placeholder="Enter your designation"
-                    className="w-full sm:w-[83%] px-4 py-2 border border-gray-300 rounded-md"
-                  />
-                </div>
-
-                <div className="flex flex-col pb-5 sm:flex-row items-start sm:items-center gap-4">
-                  <label className="w-50 text-gray-700 font-medium">
-                    Company
-                  </label>
-                  <input
-                    type="text"
-                    name="company"
-                    value={data.company}
-                    onChange={handlechange}
-                    placeholder="Enter your company name"
-                    className="w-full sm:w-[83%] px-4 py-2 border border-gray-300 rounded-md"
-                  />
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-
-        <div className="mt-6  w-full space-y-6">
-          <div className="border border-gray-300 rounded-lg shadow-sm bg-white">
-            <h2 className="text-[15px] pl-5 bg-gray-100 font-semibold text-black border-b border-gray-200 p-2">
-              Course Details
-            </h2>
-
-            <div className="p-6 space-y-6">
-              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-                <label className="text-gray-700 font-medium w-50">Course</label>
-                <select
-                  name="course"
-                  value={data.course}
-                  onChange={handlechange}
-                  className="w-full sm:w-[84%] px-4 py-2 border border-gray-300 rounded-md"
-                >
-                  <option>Select a course</option>
-                  {[
-                    "Advanced Java",
-                    "Android",
-                    "Computer Basics",
-                    "Core Java",
-                    "Digital Marketing",
-                    "Full Stack Development",
-                    "Graphic Design",
-                    "Node JS",
-                    "Photoshop",
-                    "PHP",
-                    "Python",
-                    "React JS",
-                    "Web Design",
-                    "Other Course",
-                  ].map((course) => (
-                    <option key={course}>{course}</option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-                <label className="text-gray-700 text-[15px] font-medium w-50">
-                  How did you come to know about us?
-                </label>
-                <div className="flex flex-col sm:flex-row sm:flex-wrap gap-4">
-                  {[
-                    "Google",
-                    "Linkedin",
-                    "Instagram",
-                    "College TPO",
-                    "Friend",
-                  ].map((platform) => (
-                    <label
-                      key={platform}
-                      className="flex items-center space-x-2"
-                    >
-                      <input
-                        type="radio"
-                        name="source"
-                        value={platform}
-                        checked={selectedPlatform === platform}
-                        onChange={() => setSelectedPlatform(platform)}
-                        className="accent-blue-600"
-                      />
-                      <span>{platform}</span>
-                    </label>
-                  ))}
-                </div>
-              </div>
-
-              {selectedPlatform === "Friend" && (
-                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
-                  <label className="text-gray-700 font-medium ml-54 w-30">
-                    Friend's Name
-                  </label>
-                  <input
-                    type="text"
-                    name="friendName"
-                    value={data.friendName}
-                    onChange={handlechange}
-                    placeholder="Enter friend's name"
-                    className=" sm:w-[34%] px-4 py-2 border border-gray-300 rounded-md"
-                  />
-                </div>
+                    <label htmlFor={source.toLowerCase()}>{source}</label>
+                  </span>
+                )
               )}
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
-            <input
-              type="checkbox"
-              checked={agreed}
-              onChange={() => {
-                setAgreed(!agreed);
-                openTermsModal();
-              }}
-              className="w-5 h-5 accent-blue-600 cursor-pointer"
-            />
-            <span className="text-sm text-gray-700">
-              By clicking submit, you agree to our
-              <Link
-                to="#"
-                onClick={(e) => {
-                  e.preventDefault();
-                  openTermsModal();
-                }}
-                className="text-blue-700 font-semibold underline"
+          {formValues.source === "Friend" && (
+            <div className="flex flex-col sm:flex-row gap-8 items-start sm:items-center my-4">
+              <label
+                htmlFor="friendName"
+                className="w-36 mx-2 font-medium text-gray-700"
               >
-                Terms & Conditions
-              </Link>
-            </span>
+                Friend's Name
+              </label>
+              <input
+                type="text"
+                name="friendName"
+                placeholder="Enter your friend's name"
+                className="w-full sm:w-[83%] px-4 py-2 border border-gray-300 rounded-md"
+                value={formValues.friendName}
+                onChange={handleInputChange}
+              />
+            </div>
+          )}
+
+          <div className="flex flex-col sm:flex-row gap-8 items-center my-4">
+            <label className="mx-2 font-medium text-gray-700">
+              Do you agree to the terms and conditions?
+            </label>
+            <label className="relative w-16 h-8 cursor-pointer">
+              <input
+                type="checkbox"
+                id="agree"
+                name="agree"
+                className="opacity-0 w-0 h-0"
+                checked={isChecked}
+                onChange={handleToggleChange}
+              />
+              <span
+                className={`absolute top-0 left-0 w-full h-full rounded-full transition-all duration-300 ${
+                  isChecked ? "bg-green-500" : "bg-gray-400"
+                }`}
+              ></span>
+              <span
+                className={`absolute top-1 left-1 w-6 h-6 bg-white rounded-full transition-all duration-300 ${
+                  isChecked ? "transform translate-x-8" : ""
+                }`}
+              ></span>
+            </label>
           </div>
 
-          <button
-            type="submit"
-            disabled={!agreed || isSubmitted || isLoading}
-            className={`w-full py-3 mb-5 rounded-md text-white font-semibold text-lg transition ${
-              agreed && !isSubmitted && !isLoading
-                ? "bg-blue-500 hover:bg-blue-600"
-                : "bg-blue-300 cursor-not-allowed"
-            }`}
-          >
-            {isLoading ? "Loading..." : isSubmitted ? "Registered" : "Register"}
-          </button>
-
-          {term && (
-            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-              <div className="bg-white rounded-lg shadow-lg w-full max-w-md p-6 relative">
-                <div className="flex justify-between items-center border-b pb-3">
-                  <h2 className="text-xl font-semibold text-gray-800">
-                    Terms & Conditions
-                  </h2>
+          {showPopup && (
+            <div className="popup-overlay fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+              <div className="popup bg-white p-6 rounded shadow-lg text-center max-w-xl">
+                <h2 className="text-2xl font-semibold mb-4 text-gray-800">
+                  Terms and Conditions
+                </h2>
+                <p className="text-left font-medium text-gray-700 mb-4">
+                  You agree to the following:
+                </p>
+                <ul className="list-disc text-left text-gray-600 pl-6 space-y-2 mb-6">
+                  <li>You have understood the course content.</li>
+                  <li>You have understood the course duration.</li>
+                  <li>
+                    You have cleared all your doubts regarding the course, the
+                    content, and the duration.
+                  </li>
+                  <li>Fees once paid are not refundable.</li>
+                  <li>
+                    In case of uninformed leave, you will not be eligible for a
+                    backup.
+                  </li>
+                  <li>
+                    7 days or more of leave without prior permission will result
+                    in termination of registration.
+                  </li>
+                </ul>
+                <div className="flex justify-center gap-4">
                   <button
-                    onClick={closeTermsModal}
-                    className="text-gray-500 hover:text-gray-800 text-xl font-bold"
+                    className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
+                    onClick={handlePopupAgree}
                   >
-                    <RxCross2 />
-                  </button>
-                </div>
-
-                <div className="mt-4">
-                  <p className="text-lg font-medium mb-2 text-gray-700">
-                    You agree to the following:
-                  </p>
-                  <ul className="list-disc pl-5 space-y-2 text-gray-600 text-sm">
-                    <li>You have understood the course content.</li>
-                    <li>You have understood the course duration.</li>
-                    <li>
-                      You have cleared all your doubts regarding the course, the
-                      content, and the duration.
-                    </li>
-                    <li>Fees once paid is not refundable.</li>
-                    <li>
-                      In case of uninformed leave, I will not be eligible for a
-                      backup.
-                    </li>
-                    <li>
-                      7 days or more of leave without prior permission would
-                      result in termination of registration.
-                    </li>
-                  </ul>
-                </div>
-
-                <div className="mt-6 items-center flex justify-between  space-x-4">
-                  <button
-                    onClick={handleAgree}
-                    className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition"
-                  >
-                    I Agree
+                    Agree
                   </button>
                   <button
-                    onClick={closeTermsModal}
-                    className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600 transition"
+                    className="px-4 py-2 bg-gray-400 text-white rounded hover:bg-gray-500"
+                    onClick={handlePopupCancel}
                   >
-                    Close
+                    Cancel
                   </button>
                 </div>
               </div>
             </div>
           )}
         </div>
+
+       <div className="mx-4 text-center bg-sky-500 text-black my-4 rounded-lg">
+  <button
+    type="submit"
+    className={`py-2 text-lg font-semibold w-full ${
+      isSubmitting ? "opacity-50 cursor-not-allowed" : ""
+    }`}
+    disabled={isSubmitting}
+  >
+    {isSubmitting ? "Submitting..." : "Submit"}
+  </button>
+</div>
+
       </form>
     </div>
   );
 };
 
-export default FormData;
+export default Form;

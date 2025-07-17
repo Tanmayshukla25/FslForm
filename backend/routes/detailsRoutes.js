@@ -1,10 +1,13 @@
-import { Router } from "express";
-import { addDetails } from "../controllers/addDetails.js";
-import Middleware from "../middleware/middleware.js";
 
+import { Router } from "express";
+import upload from "../middleware/middleware.js"
+import {addDetails} from "../controllers/addDetails.js"
 const detailRouter = Router();
 
 
-detailRouter.post("/add", Middleware, addDetails);
+detailRouter.post("/add", upload.fields([
+    { name: "aadhaarFront", maxCount: 1 },
+    { name: "aadhaarBack", maxCount: 1 }
+  ]),addDetails) ;
 
 export default detailRouter;

@@ -1,55 +1,27 @@
-// import DetailModel from "../models/DetailModel.js"; 
-
-// export async function addDetails(req, res,next) {
-//   try {
-//     console.log("Received Data:", req.body);
-
-//     const dataToAdd = new DetailModel(req.body);
-//     await dataToAdd.save();
-
-//     res.status(200).send("Data Added");
-//   } catch (error) {
-//     console.error("Error while saving data:", error);
-//     res.status(500).json({
-//       message: "There is an error while saving data",
-//       error: error.message,
-//     });
-//   }
-// }
-
-
-
-
-
-
-
-
-import DetailModel from "../models/DetailModel.js";
-
+import DetailModel from "../models/DetailModel.js"; 
 export async function addDetails(req, res, next) {
   try {
-    console.log("Received body:", req.body);
-    console.log("Received file:", req.file); // This is where multer stores the uploaded file
+    // console.log(" Received Body:", req.body);
+    // console.log(" Received Files:", req.files);
 
-    const { filename } = req.file || {}; // Get filename from multer
+    const aadhaarFrontFile = req.files?.aadhaarFront?.[0] || null;
+    const aadhaarBackFile = req.files?.aadhaarBack?.[0] || null;
 
-    const dataToAdd = new DetailModel({
+    const newDetail = new DetailModel({
       ...req.body,
-      aadhaar1: filename || "", // Save the filename of uploaded file
+      aadhaarFront: aadhaarFrontFile ? aadhaarFrontFile.filename : "",
+      aadhaarBack: aadhaarBackFile ? aadhaarBackFile.filename : "",
+      
     });
 
-    await dataToAdd.save();
+    await newDetail.save();
 
-    res.status(200).send("Data Added");
+    res.status(200).json({ message: " Data added successfully!" });
   } catch (error) {
-    console.error("Error while saving data:", error);
+    console.error(" Error while saving data:", error);
     res.status(500).json({
-      message: "There is an error while saving data",
+      message: "There was an error while saving data.",
       error: error.message,
     });
   }
 }
-
-
-
-
