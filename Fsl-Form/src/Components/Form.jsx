@@ -122,28 +122,28 @@ const Form = () => {
       setIsSubmitting(false);
     }
 
-    setFormValues({
-      name: "",
-      email: "",
-      password: "",
-      phone: "",
-      dob: "",
-      gender: "",
-      aadhaarFront: null,
-      aadhaarBack: null,
-      parentName: "",
-      parentPhone: "",
-      localAddress: "",
-      permanentAddress: "",
-      sameAsLocal: false,
-      status: "student",
-      qualification: "",
-      year: "",
-      college: "",
-      course: "",
-      source: "",
-      friendName: "",
-    });
+    // setFormValues({
+    //   name: "",
+    //   email: "",
+    //   password: "",
+    //   phone: "",
+    //   dob: "",
+    //   gender: "",
+    //   aadhaarFront: null,
+    //   aadhaarBack: null,
+    //   parentName: "",
+    //   parentPhone: "",
+    //   localAddress: "",
+    //   permanentAddress: "",
+    //   sameAsLocal: false,
+    //   status: "student",
+    //   qualification: "",
+    //   year: "",
+    //   college: "",
+    //   course: "",
+    //   source: "",
+    //   friendName: "",
+    // });
   }
 
   function handlePopupAgree() {
@@ -283,9 +283,9 @@ const Form = () => {
                 />
                 {aadharPreview.front && (
                   <img
-                    src={aadharPreview.front}
+                    src={aadharPreview.front}  
                     alt="Aadhaar Front Preview"
-                    className="mt-2 w-[200px] h-auto border"
+                    className="mt-2 w-[200px] object-cover h-[200px] border"
                   />
                 )}
               </div>
@@ -300,7 +300,7 @@ const Form = () => {
                   <img
                     src={aadharPreview.back}
                     alt="Aadhaar Back Preview"
-                    className="mt-2 w-[200px] h-auto border"
+                    className="mt-2 w-[200px] h-[200px] object-cover border"
                   />
                 )}
               </div>
