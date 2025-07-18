@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import instance from "../axiosConfig";
 import { ToastContainer, toast } from "react-toastify";
@@ -50,7 +49,6 @@ const Form = () => {
 
       reader.readAsDataURL(file);
 
-      
       setFormValues((prev) => ({
         ...prev,
         [name]: file,
@@ -80,8 +78,8 @@ const Form = () => {
   async function handleSubmit(e) {
     try {
       e.preventDefault();
-        if (isSubmitting) return; 
-          setIsSubmitting(true);
+      if (isSubmitting) return;
+      setIsSubmitting(true);
       console.log(formValues);
 
       const frm = new FormData();
@@ -113,7 +111,7 @@ const Form = () => {
         autoClose: 2000,
         theme: "colored",
       });
-      } catch (error) {
+    } catch (error) {
       console.error(error);
       toast.error("An error occurred during registration", {
         position: "top-right",
@@ -124,31 +122,29 @@ const Form = () => {
       setIsSubmitting(false);
     }
 
-
     setFormValues({
-       name: "",
-    email: "",
-    password: "",
-    phone: "",
-    dob: "",
-    gender: "",
-    aadhaarFront: null,
-    aadhaarBack: null,
-    parentName: "",
-    parentPhone: "",
-    localAddress: "",
-    permanentAddress: "",
-    sameAsLocal: false,
-    status: "student",
-    qualification: "",
-    year: "",
-    college: "",
-    course: "",
-    source: "",
-    friendName: "",
-    })
-  
-  };
+      name: "",
+      email: "",
+      password: "",
+      phone: "",
+      dob: "",
+      gender: "",
+      aadhaarFront: null,
+      aadhaarBack: null,
+      parentName: "",
+      parentPhone: "",
+      localAddress: "",
+      permanentAddress: "",
+      sameAsLocal: false,
+      status: "student",
+      qualification: "",
+      year: "",
+      college: "",
+      course: "",
+      source: "",
+      friendName: "",
+    });
+  }
 
   function handlePopupAgree() {
     setIsChecked(true);
@@ -157,7 +153,7 @@ const Form = () => {
   function handlePopupCancel() {
     setIsChecked(false);
     setShowPopUp(false);
-  };
+  }
 
   return (
     <div className="mt-20 p-6">
@@ -176,6 +172,8 @@ const Form = () => {
             <input
               type="text"
               name="name"
+               minLength={4}
+              maxLength={15}
               placeholder="Enter your full name"
               className="w-full sm:w-[83%] px-4 py-2 border border-gray-300 rounded-md"
               value={formValues.name}
@@ -204,9 +202,12 @@ const Form = () => {
               Phone
             </label>
             <input
-              type="number"
+              type="tel"
               name="phone"
-              placeholder="Enter your phone number"
+              minLength={10}
+              maxLength={10}
+              pattern="[0-9]{10}"
+              placeholder="Enter your 10-digit phone number"
               className="w-full sm:w-[83%] px-4 py-2 border border-gray-300 rounded-md"
               value={formValues.phone}
               onChange={handleInputChange}
@@ -340,8 +341,11 @@ const Form = () => {
               Parent/ Guardian Phone
             </label>
             <input
-              type="number"
+              type="tel"
               name="parentPhone"
+              minLength={10}
+              maxLength={10}
+                pattern="[0-9]{10}"
               placeholder="Enter parent's phone number"
               className="w-full sm:w-[83%] px-4 py-2 border border-gray-300 rounded-md"
               value={formValues.parentPhone}
@@ -595,10 +599,7 @@ const Form = () => {
           )}
 
           <div className="flex flex-col sm:flex-row gap-8 items-center my-4">
-            <label className="mx-2 font-medium text-gray-700">
-              Do you agree to the terms and conditions?
-            </label>
-            <label className="relative w-16 h-8 cursor-pointer">
+            <label className="relative w-16 ml-2 h-8 cursor-pointer">
               <input
                 type="checkbox"
                 id="agree"
@@ -609,7 +610,7 @@ const Form = () => {
               />
               <span
                 className={`absolute top-0 left-0 w-full h-full rounded-full transition-all duration-300 ${
-                  isChecked ? "bg-green-500" : "bg-gray-400"
+                  isChecked ? "bg-green-700" : "bg-gray-400"
                 }`}
               ></span>
               <span
@@ -617,6 +618,9 @@ const Form = () => {
                   isChecked ? "transform translate-x-8" : ""
                 }`}
               ></span>
+            </label>
+            <label className="mx-2 font-medium text-gray-700">
+              Do you agree to the terms and conditions?
             </label>
           </div>
 
@@ -646,7 +650,7 @@ const Form = () => {
                     in termination of registration.
                   </li>
                 </ul>
-                <div className="flex justify-center gap-4">
+                <div className="flex items-center justify-between">
                   <button
                     className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
                     onClick={handlePopupAgree}
@@ -664,19 +668,21 @@ const Form = () => {
             </div>
           )}
         </div>
-
-       <div className="mx-4 text-center bg-sky-500 text-black my-4 rounded-lg">
-  <button
-    type="submit"
-    className={`py-2 text-lg font-semibold w-full ${
-      isSubmitting ? "opacity-50 cursor-not-allowed" : ""
-    }`}
-    disabled={isSubmitting}
-  >
-    {isSubmitting ? "Submitting..." : "Submit"}
-  </button>
-</div>
-
+        <div className="mx-4 text-center my-4 rounded-lg">
+          <button
+            type="submit"
+            className={`py-2 text-lg font-semibold w-full rounded-lg text-black
+      ${
+        isSubmitting || !isChecked
+          ? "bg-blue-300 cursor-not-allowed text-white text-xl"
+          : "bg-blue-600 hover:bg-blue-500 text-xl text-white"
+      }
+    `}
+            disabled={isSubmitting || !isChecked}
+          >
+            {isSubmitting ? "Loading..." : "Register"}
+          </button>
+        </div>
       </form>
     </div>
   );
